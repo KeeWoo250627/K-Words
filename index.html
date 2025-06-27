@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>韩语单词学习</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1 id="korean-word"></h1>
+        <div class="controls">
+            <button id="show-chinese">显示中文</button>
+            <button id="next-word">下一个</button>
+            <button id="random-word">随机一个</button>
+            <button id="favorite-word">收藏</button>
+            <button id="favorites-list-btn">收藏列表</button>
+        </div>
+        <div class="category-filter">
+            <select id="category-filter">
+                <option value="all">全部</option>
+                <option value="favorites">收藏</option>
+                <option value="simple">简单</option>
+                <option value="medium">中等</option>
+                <option value="advanced">高级</option>
+            </select>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
