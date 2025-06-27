@@ -48,6 +48,7 @@ let filteredWords = [...words];
 const koreanWordElement = document.getElementById('korean-word');
 const showChineseBtn = document.getElementById('show-chinese');
 const nextWordBtn = document.getElementById('next-word');
+const prevWordBtn = document.getElementById('prev-word');
 const randomWordBtn = document.getElementById('random-word');
 const favoriteBtn = document.getElementById('favorite-word');
 const favoritesListBtn = document.getElementById('favorites-list-btn');
@@ -82,9 +83,10 @@ function renderWord() {
 function setupEventListeners() {
     showChineseBtn.addEventListener('click', toggleChinese);
     nextWordBtn.addEventListener('click', showNextWord);
+    prevWordBtn.addEventListener('click', showPrevWord);
     randomWordBtn.addEventListener('click', showRandomWord);
     favoriteBtn.addEventListener('click', toggleFavorite);
-    favoritesListBtn.addEventListener('click', showFavoritesList);
+
     categoryFilter.addEventListener('change', filterByCategory);
 }
 
@@ -97,6 +99,13 @@ function toggleChinese() {
 // 显示下一个单词
 function showNextWord() {
     currentIndex = (currentIndex + 1) % filteredWords.length;
+    renderWord();
+    updateFavoriteButton();
+}
+
+// 显示上一个单词
+function showPrevWord() {
+    currentIndex = (currentIndex - 1 + filteredWords.length) % filteredWords.length;
     renderWord();
     updateFavoriteButton();
 }
@@ -129,22 +138,11 @@ function toggleFavorite() {
 function updateFavoriteButton() {
     const currentWord = filteredWords[currentIndex];
     const isFavorite = favorites.some(word => word.korean === currentWord.korean);
-    favoriteBtn.textContent = isFavorite ? '取消收藏' : '收藏';
-    favoriteBtn.style.backgroundColor = isFavorite ? '#e74c3c' : '#4a6fa5';
-}
-
-// 显示收藏列表
-function showFavoritesList() {
-    if (favorites.length === 0) {
-        alert('收藏列表为空');
-        return;
-    }
-
-    let favoritesList = '收藏列表:\n';
-    favorites.forEach((word, index) => {
-        favoritesList += `${index + 1}. ${word.korean} - ${word.chinese}\n`;
-    });
-    alert(favoritesList);
+    // 保留图标，只更新文本内容
+    const buttonContent = isFavorite ? '<i class="fas fa-heart"></i> 取消收藏' : '<i class="fas fa-heart"></i> 收藏';
+    favoriteBtn.innerHTML = buttonContent;
+    // 强制设置背景颜色，不受其他样式影响
+    favoriteBtn.style.backgroundColor = isFavorite ? '#e74c3c' : '#f44336';
 }
 
 // 根据类别筛选单词
@@ -166,4 +164,70 @@ function filterByCategory() {
     
     currentIndex = 0;
     renderWord();
+}
+
+// 收藏列表模态框功能
+const favoritesModal = document.getElementById('favorites-modal');
+const closeBtn = document.querySelector('.close-btn');
+const favoritesListElement = document.getElementById('favorites-list');
+const clearFavoritesBtn = document.getElementById('clear-favorites');
+
+// 打开模态框
+favoritesListBtn.addEventListener('click', () => {
+    favoritesModal.style.display = 'flex';
+    renderFavoritesList();
+});
+
+// 关闭模态框
+closeBtn.addEventListener('click', () => {
+    favoritesModal.style.display = 'none';
+});
+
+// 点击模态框外部关闭
+window.addEventListener('click', (e) => {
+    if (e.target === favoritesModal) {
+        favoritesModal.style.display = 'none';
+    }
+});
+
+// 渲染收藏列表
+function renderFavoritesList() {
+    const favorites = JSON.parse(localStorage.getItem('koreanWordFavorites') || '[]');
+    
+    if (favorites.length === 0) {
+        favoritesListElement.innerHTML = '<p>暂无收藏单词</p>';
+        return;
+    }
+    
+    favoritesListElement.innerHTML = favorites.map(word => `
+        <div class="favorite-item">
+            <strong>${word.korean}</strong> - ${word.chinese}
+        </div>
+    `).join('');
+}
+
+// 清空收藏列表
+clearFavoritesBtn.addEventListener('click', () => {
+    if (confirm('确定要清空所有收藏吗？')) {
+        localStorage.removeItem('koreanWordFavorites');
+        favorites = [];
+        renderFavoritesList();
+        updateFavoriteButton();
+    }
+});
+
+// 修改收藏按钮事件
+function toggleFavorite() {
+    const currentWord = filteredWords[currentIndex];
+    const isFavorite = favorites.some(word => word.korean === currentWord.korean);
+    
+    if (isFavorite) {
+        // 从收藏中移除
+        favorites = favorites.filter(word => word.korean !== currentWord.korean);
+    } else {
+        // 添加到收藏
+        favorites.push({...currentWord});
+    }
+    localStorage.setItem('koreanWordFavorites', JSON.stringify(favorites));
+    updateFavoriteButton();
 }
